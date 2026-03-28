@@ -29,6 +29,11 @@ knight_threats = set()
 # Population size: Defines how many individuals are in the initial population.
 # (You can change this value)
 POPULATION_SIZE = 100  # use this value for the generation of your inital population.
+
+KNIGHT_OFFSETS = [
+    (1, 2), (2, 1), (1, -2), (2, -1),
+    (-1, 2), (-2, 1), (-1, -2), (-2, -1)
+]
 # <---------------------------------->
 
 # <--- ADD ADDITONAL FUNCTIONS HERE --->
@@ -71,26 +76,29 @@ def _check_diagonal(board: list) -> set:
     return conflicts
 
 
+
 def _check_knight_move(board: list) -> set:
     conflicts = set()
     board_size = len(board)
 
-    for column_a in range(board_size):
-        row_a = board[column_a]
+    #map rows to columns
+    row_to_columns = {}
+    for col, row in enumerate(board):
+        row_to_columns.setdefault(row, set()).add(col)
 
-        for column_b in range(column_a + 1, board_size):
-            row_b = board[column_b]
+    for col_a, row_a in enumerate(board):
 
-            row_diff = abs(row_a - row_b)
-            column_diff = abs(column_a - column_b)
+        for col_moves, row_moves in KNIGHT_OFFSETS:
+            target_col = col_a + col_moves
+            target_row = row_a + row_moves
 
-            knight_attack = ((row_diff == 1 and column_diff == 2) or (row_diff == 2 and column_diff == 1))
-            
-            if knight_attack:
-                conflicts.add(column_a)
-                conflicts.add(column_b)
+            if (0 <= target_col < board_size) and (0 <= target_row < board_size):
+                if (target_row in row_to_columns) and (target_col in row_to_columns[target_row]):
+                    conflicts.add(col_a)
+                    conflicts.add(target_col)
 
     return conflicts
+
 
 
 def _generate() -> list:
@@ -117,7 +125,7 @@ def genetic_algorithm(gui_mode=False):
     total_fitness = 0
     mean_fitness = 0
 
-    for gen in range(1000):
+    for gen in range(5000):
         print_generation_info(gen, best_fitness, mean_fitness)
 
         set1: set = _check_diagonal(generation)
