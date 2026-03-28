@@ -10,9 +10,6 @@ import random
 
 # <---------------------------------->
 
-board = []
-
-
 # row indices, e.g. 5
 vertical_rows = set()
 
@@ -99,6 +96,7 @@ def _generate() -> list:
     return population
 
 
+# TODO: currently swaps random conflicts, should choose good pos instead, maybe store amount of conflicts per queen?
 def _mutate(population, conflicts):
 
     x, y = random.sample(list(conflicts), 2)
@@ -108,20 +106,23 @@ def _mutate(population, conflicts):
 
 # <------------------------------------>
 
-
 def genetic_algorithm(gui_mode=False):
 
-    generation = _generate()
+    board = _generate()
 
     best_fitness = 0
     total_fitness = 0
     mean_fitness = 0
 
-    for gen in range(1000):
+    for gen in range(10000):
         print_generation_info(gen, best_fitness, mean_fitness)
 
-        set1: set = _check_diagonal(generation)
-        set2: set = _check_knight_move(generation)
+        # Prevent local maxima, is just restarting a good idea?
+        if gen % 2000 == 0:
+            board = _generate()
+
+        set1: set = _check_diagonal(board)
+        set2: set = _check_knight_move(board)
         
         conflicts = set1 | set2
     
@@ -132,10 +133,10 @@ def genetic_algorithm(gui_mode=False):
         if fitness > best_fitness:
             best_fitness = fitness
 
-        _mutate(generation, conflicts)
+        _mutate(board, conflicts)
 
     if gui_mode:
-        _print_board(generation)
+        _print_board(board)
         input()
 
 
