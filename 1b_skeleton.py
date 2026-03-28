@@ -33,13 +33,30 @@ POPULATION_SIZE = 100  # use this value for the generation of your inital popula
 
 # <--- ADD ADDITONAL FUNCTIONS HERE --->
 
-
-def _check_direction(board: list) -> set:
-    return set()
-
-
 def _check_diagonal(board: list) -> set:
-    return set()
+    conflicts = set()
+
+    # each diagonal can be occupied by exactly 1 queen (store pos in dictionary)
+    rising_diag = {}
+    falling_diag = {}
+
+    for col, row in enumerate(board):
+        rise = row + col
+        fall = row - col
+
+        if rise in rising_diag:
+            conflicts.add(col)
+            conflicts.add(rising_diag[rise])
+        else:
+            rising_diag[rise] = col
+
+        if fall in falling_diag:
+            conflicts.add(col)
+            conflicts.add(falling_diag[fall])
+        else:
+            falling_diag[fall] = col
+
+    return conflicts
 
 
 def _check_knight_move(board: list) -> set:
@@ -52,12 +69,13 @@ def _generate() -> list:
     return population
 
 
+# swaps 1 conflict randomly, improve later
 def _mutate(population, conflicts):
 
-    x = conflicts
+    x = random.choice(list(conflicts))
     y = random.randint(0, 511)
 
-    population[x], population[y]
+    population[x], population[y] = population[y], population[x]
 
 
 # <------------------------------------>
@@ -66,13 +84,27 @@ def _mutate(population, conflicts):
 def genetic_algorithm(gui_mode=False):
 
     generation = _generate()
-    set1: set = _check_direction(generation)
-    set2: set = _check_diagonal(generation)
-    set3: set = _check_knight_move(generation)
 
-    combined_conflicts = set1 | set2 | set3
+    # TODO
+    best_fitness = 0
+    total_fitness = 0
+    mean_fitness = 0
 
-    _mutate(generation, combined_conflicts)
+    for gen in range(1000):
+        set1: set = _check_diagonal(generation)
+        set2: set = _check_knight_move(generation)
+        
+        conflicts = set1 | set2
+    
+        fitness = 512 - len(conflicts)
+        total_fitness += fitness
+        mean_fitness = total_fitness / (gen + 1)
+
+        if (fitness > best_fitness):
+            best_fitness = fitness
+
+        print_generation_info(gen, best_fitness, mean_fitness)
+        _mutate(generation, conflicts)
 
 
 
