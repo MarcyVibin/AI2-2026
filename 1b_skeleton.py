@@ -6,46 +6,79 @@ but do not modify the other functions. print_generation_info() must be called on
 
 # <--- ADD ADDITONAL IMPORTS HERE --->
 import argparse
-
-
-
+import random
 
 # <---------------------------------->
 
-
-# <--- ADD ADDITONAL DEFINES HERE --->
-
-# Population size: Defines how many individuals are in the initial population. (You can change this value)
-POPULATION_SIZE = 100 # use this value for the generation of your inital population.
+board = []
 
 
+# row indices, e.g. 5
+vertical_rows = set()
+
+# row + column e.g. 5+512 = 517
+rising_diagonals = set()
+
+# row - column
+falling_diagonals = set()
+
+# have to figure this out: other sets + 1  and + 2?
+knight_threats = set()
 
 
+# Population size: Defines how many individuals are in the initial population.
+# (You can change this value)
+POPULATION_SIZE = 100  # use this value for the generation of your inital population.
 # <---------------------------------->
-
 
 # <--- ADD ADDITONAL FUNCTIONS HERE --->
 
 
+def _check_direction(board: list) -> set:
+    return set()
 
+
+def _check_diagonal(board: list) -> set:
+    return set()
+
+
+def _check_knight_move(board: list) -> set:
+    return set()
+
+
+def _generate() -> list:
+    population = list(range(512))
+    random.shuffle(population)
+    return population
+
+
+def _mutate(population, conflicts):
+
+    x = conflicts
+    y = random.randint(0, 511)
+
+    population[x], population[y]
 
 
 # <------------------------------------>
 
+
 def genetic_algorithm(gui_mode=False):
-    """
-    Implementation of your genetic algorithm.
 
-    Args:
-        gui_mode (bool): If True, run the algorithm with a GUI. Is completly free to you if you want to use that.
-    """
+    generation = _generate()
+    set1: set = _check_direction(generation)
+    set2: set = _check_diagonal(generation)
+    set3: set = _check_knight_move(generation)
 
-    pass  # TODO: Implement GA logic
+    combined_conflicts = set1 | set2 | set3
+
+    _mutate(generation, combined_conflicts)
+
+
 
 def print_generation_info(generation: int, best_fitness: float, mean_fitness: float) -> None:
     """
     Displays the statistics of the current population in a structured format.
-
     Args:
         generation (int): The current generation number.
         best_fitness (float): The best fitness value in the current population.
