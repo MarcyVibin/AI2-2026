@@ -81,13 +81,14 @@ def _check_knight_move(board: list) -> set:
         for column_b in range(column_a + 1, board_size):
             row_b = board[column_b]
 
-        row_diff = abs(row_a - row_b)
-        column_diff = abs(column_a - column_b)
+            row_diff = abs(row_a - row_b)
+            column_diff = abs(column_a - column_b)
 
-        knight_attack = ((row_diff == 1 and column_diff == 2) or (row_diff == 2 and column_diff == 1))
-        
-        if knight_attack:
-            conflicts.add((column_a, column_b))
+            knight_attack = ((row_diff == 1 and column_diff == 2) or (row_diff == 2 and column_diff == 1))
+            
+            if knight_attack:
+                conflicts.add(column_a)
+                conflicts.add(column_b)
 
     return conflicts
 
@@ -98,11 +99,9 @@ def _generate() -> list:
     return population
 
 
-# swaps 1 conflict randomly, improve later
 def _mutate(population, conflicts):
 
-    x = random.choice(list(conflicts))
-    y = random.randint(0, 511)
+    x, y = random.sample(list(conflicts), 2)
 
     population[x], population[y] = population[y], population[x]
 
@@ -114,12 +113,13 @@ def genetic_algorithm(gui_mode=False):
 
     generation = _generate()
 
-    # TODO
     best_fitness = 0
     total_fitness = 0
     mean_fitness = 0
 
     for gen in range(1000):
+        print_generation_info(gen, best_fitness, mean_fitness)
+
         set1: set = _check_diagonal(generation)
         set2: set = _check_knight_move(generation)
         
@@ -129,12 +129,14 @@ def genetic_algorithm(gui_mode=False):
         total_fitness += fitness
         mean_fitness = total_fitness / (gen + 1)
 
-        if (fitness > best_fitness):
+        if fitness > best_fitness:
             best_fitness = fitness
 
-        print_generation_info(gen, best_fitness, mean_fitness)
         _mutate(generation, conflicts)
 
+    if gui_mode:
+        _print_board(generation)
+        input()
 
 
 def print_generation_info(generation: int, best_fitness: float, mean_fitness: float) -> None:
