@@ -79,9 +79,9 @@ def _check_knight_move(board: list) -> set:
     board_size = len(board)
 
     #map rows to columns
-    row_to_columns = {}
-    for col, row in enumerate(board):
-        row_to_columns.setdefault(row, set()).add(col)
+    #row_to_columns = {}
+    #for col, row in enumerate(board):
+        #row_to_columns.setdefault(row, set()).add(col)
 
     for col_a, row_a in enumerate(board):
 
@@ -89,8 +89,12 @@ def _check_knight_move(board: list) -> set:
             target_col = col_a + col_moves
             target_row = row_a + row_moves
 
-            if (0 <= target_col < board_size) and (0 <= target_row < board_size):
-                if (target_row in row_to_columns) and (target_col in row_to_columns[target_row]):
+           # if (0 <= target_col < board_size) and (0 <= target_row < board_size):
+            # ist die Zielspalte auf dem Brett?
+            if 0 <= target_col < board_size:
+                #if (target_row in row_to_columns) and (target_col in row_to_columns[target_row]):
+                # Steht die Dame in der Zielspalte auf der Zielzeile?
+                if board[target_col] == target_row:
                     conflicts.add(col_a)
                     conflicts.add(target_col)
 
@@ -105,48 +109,92 @@ def _generate() -> list:
 
 
 # TODO: currently swaps random conflicts, should choose good pos instead, maybe store amount of conflicts per queen?
-def _mutate(population, conflicts):
+def _mutate(board, conflicts):
+    if not conflicts:
+        return (512, board, set())
+        
+    current_conflicts = len(conflicts)
+    conflict_list = list(conflicts)
+    random.shuffle(conflict_list)
 
-    x, y = random.sample(list(conflicts), 2)
+    for y in conflict_list:
+        for x in range(len(board)):
+            if x == y:
+                continue
+      
+            board[y], board[x] = board[x], board[y]
 
-    population[x], population[y] = population[y], population[x]
+            set1 = _check_diagonal(board)
+            set2 = _check_knight_move(board) 
+            new_conflicts = len(set1 | set2)
+        
+            if new_conflicts < current_conflicts:
+                fitness = 512 - new_conflicts
+                return (fitness, board, (set1 | set2))
+                
+            board[y], board[x] = board[x], board[y]
+            fitness = 512 - current_conflicts
+
+    return (fitness, board, conflicts)
 
 
 # <------------------------------------>
 
 def genetic_algorithm(gui_mode=False):
-
-    board = _generate()
+    
+    list_of_boards = [_generate() for i in range(100)]
 
     best_fitness = 0
-    total_fitness = 0
-    mean_fitness = 0
-
+   
     for gen in range(10000):
-        print_generation_info(gen, best_fitness, mean_fitness)
-
-        # Prevent local maxima, is just restarting a good idea?
-        if gen % 2000 == 0:
-            board = _generate()
-
-        set1: set = _check_diagonal(board)
-        set2: set = _check_knight_move(board)
+        current_gen_total_fitness = 0
+        gens_ranked = []
         
-        conflicts = set1 | set2
-    
-        fitness = 512 - len(conflicts)
-        total_fitness += fitness
-        mean_fitness = total_fitness / (gen + 1)
+        for i, board in enumerate(list_of_boards):
+        
+        
+            # Prevent local maxima, is just restarting a good idea? 
+            # I dont have a better one. 
+            if gen > 0 and gen % 2000 == 0:
+                list_of_boards[i] = _generate()
+                board = list_of_boards[i]
+        
+            set1: set = _check_diagonal(board)
+            set2: set = _check_knight_move(board)
+            
+            conflicts = set1 | set2
+        
+            fitness = 512 - len(conflicts)
+            gens_ranked.append((fitness, board, conflicts))
+            current_gen_total_fitness += fitness
+        
+            if fitness > best_fitness:
+                best_fitness = fitness
+            
+            if fitness == 512:
+                print(f"Generation {gen} solved the problem!")
+                if gui_mode:
+                    _print_board(board)
+                return
+                
+            #_mutate(board, conflicts) sollte wohl besser nach dem loop passieren
+                
+        
+        # DIE 50 BESTEN VON JEDER 100 BRETTER STARKEN GENERATION BEHALTEN, DEN REST "STERBEN LASSEN"
+        gens_ranked.sort(reverse=True, key=lambda x: x[0])
+        fittest = gens_ranked[:50]
 
-        if fitness > best_fitness:
-            best_fitness = fitness
-
-        _mutate(board, conflicts)
-
-    if gui_mode:
-        _print_board(board)
-        input()
-
+        # TO DO:
+        # Die 50 mutieren
+        for i, board in enumerate(fittest):
+            fittest[i] = _mutate(board[1], board[2])
+            
+        
+        # DIE 50 FITTESTEN MITEINANDER KREUZEN (DIE LISTEN MISCHEN) UND SO DIE 50 GESTORBENEN WIEDER "VOLL" KRIEGEN 
+        mean_fitness = current_gen_total_fitness / 100
+        print_generation_info(gen, best_fitness, mean_fitness)
+   
+     
 
 def print_generation_info(generation: int, best_fitness: float, mean_fitness: float) -> None:
     """
