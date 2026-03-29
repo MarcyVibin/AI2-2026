@@ -178,17 +178,16 @@ def genetic_algorithm(gui_mode=False):
                 print(f"Generation {gen} solved the problem!")
                 if gui_mode:
                     _print_board(board)
+                    input()
                 return
                 
-        # DIE 50 BESTEN VON JEDER 100 BRETTER STARKEN GENERATION BEHALTEN, DEN REST "STERBEN LASSEN"
+        # Beste 10% überleben, den rest aus den besten kreuzen
         gens_ranked.sort(reverse=True, key=lambda x: x[0])
-        fittest = gens_ranked[:POPULATION_SIZE//2]
+        fittest = gens_ranked[:POPULATION_SIZE//10]
 
-        # Die 50 mutieren
         for i, board in enumerate(fittest):
             fittest[i] = _mutate(board[1], board[2])
-            
-        # DIE 50 FITTESTEN MITEINANDER KREUZEN (DIE LISTEN MISCHEN) UND SO DIE 50 GESTORBENEN WIEDER "VOLL" KRIEGEN
+
         new_population = []
         for fitness, board, conflicts in fittest:
             new_population.append(board)
@@ -202,7 +201,6 @@ def genetic_algorithm(gui_mode=False):
             new_population.append(child)
 
         list_of_boards = new_population
-
 
         mean_fitness = current_gen_total_fitness / POPULATION_SIZE
         print_generation_info(gen, best_fitness, mean_fitness)
