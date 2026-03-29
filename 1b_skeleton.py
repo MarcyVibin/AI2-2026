@@ -10,22 +10,11 @@ import random
 
 # <---------------------------------->
 
-# row indices, e.g. 5
-vertical_rows = set()
-
-# row + column e.g. 5+512 = 517
-rising_diagonals = set()
-
-# row - column
-falling_diagonals = set()
-
-# have to figure this out: other sets + 1  and + 2?
-knight_threats = set()
-
-
 # Population size: Defines how many individuals are in the initial population.
 # (You can change this value)
 POPULATION_SIZE = 100  # use this value for the generation of your inital population.
+
+QUEEN_AMOUNT = 512
 
 KNIGHT_OFFSETS = [
     (1, 2), (2, 1), (1, -2), (2, -1),
@@ -50,38 +39,32 @@ def _print_board(board: list):
 def _check_diagonal(board: list) -> set:
     conflicts = set()
 
-    # each diagonal can be occupied by exactly 1 queen (store pos in dictionary)
-    rising_diag = {}
-    falling_diag = {}
+    # Uses arrays instead of dicts now, store queen col as value
+    rising = [-1] * len(board) * 2
+    falling = [-1] * len(board) * 2
 
     for col, row in enumerate(board):
-        rise = row + col
-        fall = row - col
+        r = row + col
+        f = row - col + len(board) # prevents -1 as a valid value
 
-        if rise in rising_diag:
+        if rising[r] != -1:
             conflicts.add(col)
-            conflicts.add(rising_diag[rise])
+            conflicts.add(rising[r])
         else:
-            rising_diag[rise] = col
+            rising[r] = col
 
-        if fall in falling_diag:
+        if falling[f] != -1:
             conflicts.add(col)
-            conflicts.add(falling_diag[fall])
+            conflicts.add(falling[f])
         else:
-            falling_diag[fall] = col
+            falling[f] = col
 
     return conflicts
-
 
 
 def _check_knight_move(board: list) -> set:
     conflicts = set()
     board_size = len(board)
-
-    #map rows to columns
-    #row_to_columns = {}
-    #for col, row in enumerate(board):
-        #row_to_columns.setdefault(row, set()).add(col)
 
     for col_a, row_a in enumerate(board):
 
@@ -89,10 +72,8 @@ def _check_knight_move(board: list) -> set:
             target_col = col_a + col_moves
             target_row = row_a + row_moves
 
-           # if (0 <= target_col < board_size) and (0 <= target_row < board_size):
-            # ist die Zielspalte auf dem Brett?
-            if 0 <= target_col < board_size:
-                #if (target_row in row_to_columns) and (target_col in row_to_columns[target_row]):
+            # ist die Zielspalte/zeile auf dem Brett?
+            if 0 <= target_col < board_size and 0 <= target_row < board_size:
                 # Steht die Dame in der Zielspalte auf der Zielzeile?
                 if board[target_col] == target_row:
                     conflicts.add(col_a)
@@ -101,18 +82,17 @@ def _check_knight_move(board: list) -> set:
     return conflicts
 
 
-
 def _generate() -> list:
-    population = list(range(512))
+    population = list(range(QUEEN_AMOUNT))
     random.shuffle(population)
     return population
 
 
-# TODO: currently swaps random conflicts, should choose good pos instead, maybe store amount of conflicts per queen?
 def _mutate(board, conflicts):
     if not conflicts:
-        return (512, board, set())
+        return (QUEEN_AMOUNT, board, set())
         
+    board = board.copy()
     current_conflicts = len(conflicts)
     conflict_list = list(conflicts)
     random.shuffle(conflict_list)
@@ -129,20 +109,45 @@ def _mutate(board, conflicts):
             new_conflicts = len(set1 | set2)
         
             if new_conflicts < current_conflicts:
-                fitness = 512 - new_conflicts
+                fitness = QUEEN_AMOUNT - new_conflicts
                 return (fitness, board, (set1 | set2))
                 
             board[y], board[x] = board[x], board[y]
-            fitness = 512 - current_conflicts
+            fitness = QUEEN_AMOUNT - current_conflicts
 
     return (fitness, board, conflicts)
 
+
+# combines two random segments of parent1 and parent2 into child
+def _crossover(parent1: list, parent2: list) -> list:
+    board_size = len(parent1)
+    child = [-1] * board_size
+
+    # fill random segment with parent1
+    start_idx = random.randint(0, board_size - 2)
+    end_idx = random.randint(start_idx, board_size - 1)
+
+    child[start_idx:end_idx] = parent1[start_idx:end_idx]
+
+    # set because it's faster than list (col in child:)
+    used = set(child)
+
+    # fill rest with parent2, skip already used rows in parent2
+    parent2_idx = 0
+    for i in range(board_size):
+        if child[i] == -1:
+            while parent2[parent2_idx] in used:
+                parent2_idx += 1
+            child[i] = parent2[parent2_idx]
+            used.add(parent2[parent2_idx])
+
+    return child
 
 # <------------------------------------>
 
 def genetic_algorithm(gui_mode=False):
     
-    list_of_boards = [_generate() for i in range(100)]
+    list_of_boards = [_generate() for i in range(POPULATION_SIZE)]
 
     best_fitness = 0
    
@@ -152,10 +157,8 @@ def genetic_algorithm(gui_mode=False):
         
         for i, board in enumerate(list_of_boards):
         
-        
-            # Prevent local maxima, is just restarting a good idea? 
-            # I dont have a better one. 
-            if gen > 0 and gen % 2000 == 0:
+            # Prevent local maxima, just restarting
+            if gen > 0 and gen % 500 == 0:
                 list_of_boards[i] = _generate()
                 board = list_of_boards[i]
         
@@ -164,36 +167,45 @@ def genetic_algorithm(gui_mode=False):
             
             conflicts = set1 | set2
         
-            fitness = 512 - len(conflicts)
+            fitness = QUEEN_AMOUNT - len(conflicts)
             gens_ranked.append((fitness, board, conflicts))
             current_gen_total_fitness += fitness
         
             if fitness > best_fitness:
                 best_fitness = fitness
             
-            if fitness == 512:
+            if fitness == QUEEN_AMOUNT:
                 print(f"Generation {gen} solved the problem!")
                 if gui_mode:
                     _print_board(board)
                 return
                 
-            #_mutate(board, conflicts) sollte wohl besser nach dem loop passieren
-                
-        
         # DIE 50 BESTEN VON JEDER 100 BRETTER STARKEN GENERATION BEHALTEN, DEN REST "STERBEN LASSEN"
         gens_ranked.sort(reverse=True, key=lambda x: x[0])
-        fittest = gens_ranked[:50]
+        fittest = gens_ranked[:POPULATION_SIZE//2]
 
-        # TO DO:
         # Die 50 mutieren
         for i, board in enumerate(fittest):
             fittest[i] = _mutate(board[1], board[2])
             
-        
-        # DIE 50 FITTESTEN MITEINANDER KREUZEN (DIE LISTEN MISCHEN) UND SO DIE 50 GESTORBENEN WIEDER "VOLL" KRIEGEN 
-        mean_fitness = current_gen_total_fitness / 100
+        # DIE 50 FITTESTEN MITEINANDER KREUZEN (DIE LISTEN MISCHEN) UND SO DIE 50 GESTORBENEN WIEDER "VOLL" KRIEGEN
+        new_population = []
+        for fitness, board, conflicts in fittest:
+            new_population.append(board)
+
+        while len(new_population) < POPULATION_SIZE:
+            parent1 = random.choice(fittest)[1]
+            parent2 = random.choice(fittest)[1]
+
+            child = _crossover(parent1, parent2)
+
+            new_population.append(child)
+
+        list_of_boards = new_population
+
+
+        mean_fitness = current_gen_total_fitness / POPULATION_SIZE
         print_generation_info(gen, best_fitness, mean_fitness)
-   
      
 
 def print_generation_info(generation: int, best_fitness: float, mean_fitness: float) -> None:
