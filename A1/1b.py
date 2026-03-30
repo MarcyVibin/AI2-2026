@@ -16,7 +16,10 @@ POPULATION_SIZE = 100  # use this value for the generation of your inital popula
 
 QUEEN_AMOUNT = 512
 
-KNIGHT_OFFSETS = [(1, 2), (2, 1)] # works because every piece is checked, also avoids duplicate conflicts so it improves fitness accuracy
+KNIGHT_OFFSETS = [
+    (1, 2), (2, 1), (-1, 2), (-2, 1),
+    (-1, -2), (-2, -1), (1, -2), (2, -1)
+]
 
 # <---------------------------------->
 
@@ -117,7 +120,7 @@ def _mutate(board, conflicts):
             board[y], board[x] = board[x], board[y]
 
             set1 = _check_diagonal(board)
-            set2 = _check_knight_move(board) 
+            set2 = _check_knight_move(board)
             new_conflicts = len(set1 | set2)
         
             if new_conflicts < current_conflicts:
