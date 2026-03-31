@@ -1,5 +1,28 @@
+# AI2 Exercise 1
+#### Group 09: , Marc Steger, Stefan Lepolt
+
+## 1a. Backtracking with forward checking
+
+#### Initial domains:
+$D... Domain$
+$D(x_1) = \{1, 2, 3, 4\}$
+$D(x_2) = \{1, 2, 3\}$
+#### Node Consistency (constraint  $x_2 = 3$):
+$D(x_2) = \{3\}$
+#### We choose a variable with "first fail" principle (MRV):
+$x_2 = 3$
+#### Forward checking $x_1 > 3$:
+Since $x_1$ has to be bigger than 3, our decision we can remove all elements smaller or equal to 3. By removing all the inconsistent values our new Domain becomes: 
+$D(x_1) = \{4\}$
+#### Assign: 
+$x_1 = 4$
+
+#### Solution: 
+$x_1 = 4, x_2 = 3$
+
+This matches the output of our minizinc model.
+
 ## 1b. Super 512 Queens problem
-#### General Idea
 
 #### Population Design
 Each individual (board) in a generation is represented as a list, its index indicates the column of of the board and its value the row of the queen. When first generating a board, we ensure each value (row) is unique, so no vertical and horizontal queen conflicts are able to occur and never have to be checked.
