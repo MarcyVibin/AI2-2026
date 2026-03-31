@@ -119,16 +119,14 @@ def _mutate(board, conflicts):
       
             board[y], board[x] = board[x], board[y]
 
-            set1 = _check_diagonal(board)
-            set2 = _check_knight_move(board)
-            new_conflicts = len(set1 | set2)
+            new_conflicts = _check_diagonal(board) | _check_knight_move(board)
+            new_conflicts_len = len(new_conflicts)
         
-            if new_conflicts < current_conflicts:
-                fitness = QUEEN_AMOUNT - new_conflicts
-                return (fitness, board, (set1 | set2))
+            if new_conflicts_len < current_conflicts:
+                fitness = QUEEN_AMOUNT - new_conflicts_len
+                return (fitness, board, new_conflicts)
                 
             board[y], board[x] = board[x], board[y]
-            fitness = QUEEN_AMOUNT - current_conflicts
 
     return (fitness, board, conflicts)
 
