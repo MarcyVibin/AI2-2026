@@ -11,4 +11,7 @@ We then added a constraint that every valid position has to be litUp, for this w
 Result: clingo version 5.7.2 showed 801 correct models for the provided example instance of the grid.
 
 #### Task B
-
+For Task B, we just added one constraint and rule:
+adjacentToWall/4 is self explanatory, it can be derived if one position is a wall and the other position is adjacent to it.
+The constraint itself ensures with the aggregate function count that each wall doesnt have more than k light bulbs next to it.
+Result: clingo version 5.7.2 showed 44 correct models for the provided example instance of the grid.
