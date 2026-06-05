@@ -12,7 +12,7 @@
     ;; Connections
     ;; (connected x y)
 
-    ;; Entrance
+    ;; entrance
     (connected entrance bathroom)
     (connected bathroom entrance)
     (connected entrance charging-station1)
@@ -24,7 +24,7 @@
     (connected entrance road1)
     (connected road1 entrance)
 
-    ;; Center
+    ;; center
     (connected center road1)
     (connected road1 center)
     (connected center road2)
@@ -34,13 +34,13 @@
     (connected center charging-station2)
     (connected charging-station2 center)
 
-    ;; Other
+    ;; other
     (connected road3 market)
     (connected market road3)
     (connected road2 pharmacy)
     (connected pharmacy road2)
 
-    ;; Location types
+    ;; goal locations
     (is-charging-station charging-station1)
     (is-charging-station charging-station2)
     (is-shop market)
