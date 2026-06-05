@@ -1,55 +1,174 @@
 (define (domain subot-domain)
-        (:requirements :strips :typing :fluents)
+    (:requirements :strips :typing :fluents)
 
-        (:types
-            location
-            )
-        (predicates
-            ;; TRUE wenn der Roboter an der locaion steht
-            (at-robot ?loc - location)
-            ;; TRUE, wenn Weg  von loc1 nach loc2 existier:
-            (connected ?loc ?loc2 -location)
-            ;; sagt ob ein Ort eine Ladestation hat
-            (is-charging-station ?loc - location )
+    (:types
+        location
+    )
 
-            ;; States fuer Gegenstaende wie Einkaufe, Medizin
+    (:predicates
+        ;; TRUE wenn der roboter an der location steht
+        (at-robot ?loc - location)
+        ;; TRUE, wenn weg von loc1 nach loc2 existiert
+        (connected ?loc1 ?loc2 - location)
+        ;; ladestation
+        (is-charging-station ?loc - location)
 
+        ;; location types
+        (is-shop ?loc - location)
+        (is-pharmacy ?loc - location)
+        (is-kitchen ?loc - location) 
+        (is-dining-room ?loc - location)
+        (is-laundry-room ?loc - location)
+        (is-owner-location ?loc - location)
 
+        ;; was der roboter aktuell trägt
+        (robot-has-groceries)
+        (robot-has-medicine)
+        (robot-has-dinner)
 
+        ;; states für erledigte Aufgaben
+        (dinner-prepared)
+        (dinner-served)
+        (medicine-delivered) 
+        (chatted-with-owner)
+        (laundry-done)
+    )
 
-            ;; was der Roboter aktuell traegt
+    (:functions
+        (battery-level)
+        (time)
+    )
 
+    ;; bewegung von A nach B
+    (:action move
+        :parameters (?from - location ?to - location)
+        :precondition (and
+            (at-robot ?from)
+            (connected ?from ?to) 
+            (>= (battery-level) 1)
+        )
+        :effect (and
+            (not (at-robot ?from))
+            (at-robot ?to)
+            (decrease (battery-level) 1)
+            (increase (time) 1)
+        )
+    )
 
+    ;; aufladen
+    (:action charge
+        :parameters (?loc - location)
+        :precondition (and
+            (at-robot ?loc) 
+            (is-charging-station ?loc)
+        )
+        :effect (and
+            (assign (battery-level) 20)
+            (increase (time) 1)
+        )
+    )
 
-            ;; States fuer erledigte Aufgaben
+    ;; einkaufen
+    (:action buy-groceries
+        :parameters (?loc - location)
+        :precondition (and 
+            (at-robot ?loc)
+            (is-shop ?loc)
+            (not (robot-has-groceries))
+        )
+        :effect (and
+            (robot-has-groceries)
+        )
+    )
+
+    ;; medizin holen
+    (:action fetch-medicine
+        :parameters (?loc - location)
+        :precondition (and
+            (at-robot ?loc)
+            (is-pharmacy ?loc)
+            (not (robot-has-medicine))
+        )
+        :effect (and
+            (robot-has-medicine)
+        )
+    ) 
+
+    ;; medizin ablegen
+    (:action deliver-medicine
+        :parameters (?loc - location)
+        :precondition (and
+            (at-robot ?loc)
+            (is-laundry-room ?loc) 
+            (robot-has-medicine)
+        )
+        :effect (and
+            (not (robot-has-medicine))
+            (medicine-delivered)
+        )
+    )
+
+    ;; abendessen kochen
+    (:action prepare-dinner
+        :parameters (?loc - location)
+        :precondition (and
+            (at-robot ?loc)
+            (is-kitchen ?loc)
+            (robot-has-groceries)
+            (not (dinner-prepared)) 
+        )
+        :effect (and
+            (not (robot-has-groceries))
+            (robot-has-dinner)
             (dinner-prepared)
+            (increase (time) 1)
+        )
+    )
+
+    ;; essen servieren
+    (:action serve-dinner
+        :parameters (?loc - location)
+        :precondition (and
+            (at-robot ?loc)
+            (is-dining-room ?loc)
+            (robot-has-dinner)
+            (not (dinner-served))
+            (>= (time) 7)
+            (<= (time) 18)
+        ) 
+        :effect (and
+            (not (robot-has-dinner))
             (dinner-served)
+        )
+    )
+
+    ;; chatten mit dem besitzer
+    (:action chat-with-owner
+        :parameters (?loc - location)
+        :precondition (and
+            (at-robot ?loc)
+            (is-dining-room ?loc)
+            (dinner-served)
+            (not (chatted-with-owner))
+            (>= (time) 7)
+            (<= (time) 18)
+        )
+        :effect (and
             (chatted-with-owner)
-            ;; etc
+            (increase (time) 1)
         )
+    )
 
-        ;; Fluents fuer Zahlen die sich veraendern
-        (:functions
-            (battery-level)
-            (time)
+    ;; laundry machen
+    (:action do-laundry
+        :parameters (?loc - location)
+        :precondition (and
+            (at-robot ?loc)
+            (is-laundry-room ?loc)
+            (not (laundry-done))
+        ) 
+        :effect (and
+            (laundry-done)
         )
-
-        ;; AKTIONEN DES ROBOTERS
-
-        ;; 1. Bewegung von A nach B
-
-        ;; 2. Aufladen
-
-        ;; 3. Einkaufen
-
-        ;; 4. Medizin holen
-
-        ;; 5. Medizin ablegen
-
-        ;; 6. Abendessen kochen
-
-        ;; 7. Essen servieren
-
-        ;; 8. Chatten mit dem Bes.
-
-        ;; 9. Laundry machen
+    )
+)
