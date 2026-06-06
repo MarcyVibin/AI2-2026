@@ -1,5 +1,5 @@
 (define (domain subot-domain)
-    (:requirements :strips :typing :fluents)
+    (:requirements :strips :typing :negative-preconditions :fluents)
 
     (:types
         location
@@ -29,7 +29,7 @@
         ;; states für erledigte Aufgaben
         (dinner-prepared)
         (dinner-served)
-        (medicine-delivered) 
+        (medicine-placed)
         (chatted-with-owner)
         (laundry-done)
     )
@@ -95,7 +95,7 @@
     ) 
 
     ;; medizin ablegen
-    (:action deliver-medicine
+    (:action place-medicine
         :parameters (?loc - location)
         :precondition (and
             (at-robot ?loc)
@@ -104,7 +104,7 @@
         )
         :effect (and
             (not (robot-has-medicine))
-            (medicine-delivered)
+            (medicine-placed)
         )
     )
 

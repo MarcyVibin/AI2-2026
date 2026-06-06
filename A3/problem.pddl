@@ -57,7 +57,9 @@
   (:goal 
     (and
       (dinner-served)
-      (medicine-delivered)
+      (medicine-placed)
       (laundry-done)
       (chatted-with-owner)
-)))
+))
+(:metric minimize (time))
+)
