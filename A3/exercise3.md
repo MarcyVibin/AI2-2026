@@ -62,6 +62,9 @@ I(C, Z, D) - never blocked, no independence
 P(A) = P(w1) + P(w2) + P(w3) + P(w4) + P(w5) + P(w6) + P(w7) + P(w8)
 P(A) = 0.0192 + 0.0288 + 0.0864 + 0.3456 + 0.024 + 0.036 + 0.012 + 0.048
 P(A) = 0.6
+P(B) = 0.64
+P(C) = 0.244
+P(D) = 0.289
 
 #### Conditional Probability Tables
 DAG a:
