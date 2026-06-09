@@ -5,19 +5,60 @@
 
 ### Modelling in PDDL
 #### Domain File
-The Domain File explains the environment. So theres no instantiating only defining of what the environment exist. For types there is only one: ```location```. So bathroom, entrance, kitchen, the roads, will all map to a its own location. The predicates are split into 4 groups, being the location types the carrying states the task completion states and the navigation logic. The last part of the Domain File are all the different actions our robot can take. Those are also just implemented as per definition of the assignment sheet.
+The Domain File explains the environment. So theres no instantiating only definitions of what exists in the environment. For each type there is only one: ```location```. Bathroom, entrance, kitchen, the roads, all map to their own location. The predicates are split into 4 groups, the location types, the carrying states, the task completion states and the navigation logic. The last part of the Domain File consists of all the different actions our robot can perform. Those are implemented as defined by the assignment sheet.
 
 #### Problem File
-In the problem file, first the objects are defined. Those just create Location Objects (entrance, center, roads...). Connections in PDDL are directional and since our graph is undirected, we map ever connection from A to B and from B to A. Therefore theres a mapping of Figure 1 in the Assignment sheet of every connection for all the locations which is instantized in ```:init```. The goal location types are also defined in our init. So each location that could be a goal location (everything other than roads) gets its own goal location. We also set our starting battery level to 2 and our starting time to 1.
-For our goal we set our and states to ````dinner-server && medicine-delivered && laundry-done && chatted-with-owner``` also as stated in the assignment.
+In the problem file objects are defined first. They create location objects, e.g. entrance, center, roads. Connections in PDDL are directional and since our graph is undirected, we map all connections back and forth, i.e. from A to B and from B to A. Hence there is a mapping of Figure 1 in the Assignment sheet from every connection for all the locations, instantiated in ```:init```. The target location types are defined in our init as well. Each location that could be a target location (everything other than roads) gets its own target location. We also set our starting battery level to 2 and our starting time to 1.
+For our target we set states to ````dinner-served && medicine-placed && laundry-done && chatted-with-owner``` also as stated in the assignment.
 
 ### Solve and provide a plan
 
-...
+0.0: (move entrance charging-station1)
+1.0: (charge charging-station1)
+2.0: (move charging-station1 entrance)
+3.0: (move entrance bathroom)
+4.0: (do-laundry bathroom)
+5.0: (move bathroom entrance)
+6.0: (move entrance road1)
+7.0: (move road1 center)
+8.0: (move center road3)
+9.0: (move road3 market)
+10.0: (buy-groceries market)
+11.0: (move market road3)
+12.0: (move road3 center)
+13.0: (move center road1)
+14.0: (move road1 entrance)
+15.0: (move entrance kitchen)
+16.0: (prepare-dinner kitchen)
+17.0: (move kitchen entrance)
+18.0: (move entrance dining-room)
+19.0: (serve-dinner dining-room)
+20.0: (chat-with-owner dining-room)
+21.0: (move dining-room entrance)
+22.0: (move entrance charging-station1)
+23.0: (charge charging-station1)
+24.0: (move charging-station1 entrance)
+25.0: (move entrance road1)
+26.0: (move road1 center)
+27.0: (move center road2)
+28.0: (move road2 pharmacy)
+29.0: (fetch-medicine pharmacy)
+30.0: (move pharmacy road2)
+31.0: (move road2 center)
+32.0: (move center road1)
+33.0: (move road1 entrance)
+34.0: (move entrance bathroom)
+35.0: (place-medicine bathroom)
 
 ### Would you use such a robot?
 
-...
+I think a robot like SuBot would be useful for the practical part of
+running a household such as getting medicine, preparing meals, and handling everyday tasks, actions where automation can mean more independence for people who have difficulties coping with them, e.g. the elderly or people with limited mobility. For those purposes a robot would be a gamechanger.
+
+I am more sceptical about the idea of addressing loneliness by a robot. A
+system that "chats with the owner" can provide routine and an illusion of socila interaction, for someone who would have no other options to talk, that is not nothing. But I would see it only as a better than nothing solution, not a serious replacement for human contact. Lonely people are longing for another person, and a scripted interaction can't provide that. The problem I see is that if a robot might be accepted as a "good enough" choice, it could quietly reduce the pressure to provide real human care. So I would understand the robot as a tool and view the relationship mimicking feature as a somewhat curious but limited byproduct. 
+
+
 
 ## Exercise 2: Bayesian Networks
 
